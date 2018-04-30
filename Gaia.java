@@ -38,6 +38,7 @@ public class Gaia {
 			int i = 0;
 			Pattern p = Pattern.compile(".*.csv.gz");
 			List<String> list = new ArrayList<String>();
+			File file = null;
 
 			for (i = 0; i < len; i++) {
 				Matcher m = p.matcher(str[i]);
@@ -49,11 +50,17 @@ public class Gaia {
 			len = list.size();
 
 			for (i = 0; i < len; i++) {
-				if (input(GAIA_SOURCE_URL + list.get(i), true)) {
-					output(list.get(i).replace(".gz", ""));
-					System.out.println(i + ":OK:" + list.get(i));
+				file = new File(TEMP_DIR_PATH + list.get(i).replace(".gz", ""));
+
+				if (!file.exists()) {
+					if (input(GAIA_SOURCE_URL + list.get(i), true)) {
+						output(file);
+						System.out.println(i + ":OK:" + list.get(i));
+					} else {
+						System.out.println(i + ":NG:" + list.get(i));
+					}
 				} else {
-					System.out.println(i + ":NG:" + list.get(i));
+					System.out.println(i + ":Skip:" + list.get(i));
 				}
 			}
 		}
@@ -131,12 +138,12 @@ public class Gaia {
 		return ret;
 	}
 
-	private void output(String name) {
+	private void output(File fo) {
 		File fi = new File(TEMP_FILE_PATH);
 
 		try {
 			BufferedReader br = new BufferedReader(new InputStreamReader(new GZIPInputStream(new BufferedInputStream(new FileInputStream(fi)))));
-			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(new File(TEMP_DIR_PATH + name))));
+			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(fo)));
 			String line = br.readLine();
 			String[] data = null;
 
